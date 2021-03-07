@@ -127,6 +127,27 @@ services:
     #       - "traefik.http.routers.posts-ssl.entryPoints=websecure"
     #       - "traefik.http.routers.posts-ssl.tls=true"
     #       - "traefik.http.routers.posts-ssl.service=posts"
-    
+
+  moderation:
+    build: 
+      context: moderation
+      dockerfile: Dockerfile
+    volumes: 
+      - ./moderation/src:/moderation/src
+    # depends_on:
+      # - reverse-proxy
+    ports: 
+      - 4003:4003
+    networks:
+      - proxy
+    # labels:
+    #       - "traefik.http.routers.posts.rule=Host(`posts.localhost`)"
+    #       - "traefik.http.routers.posts.entryPoints=web,traefik"
+    #       - "traefik.http.services.post.loadbalancer.server.port=4000"
+    #       - "traefik.http.routers.posts-ssl.rule=Host(`posts.localhost`)"
+    #       - "traefik.http.routers.posts-ssl.entryPoints=websecure"
+    #       - "traefik.http.routers.posts-ssl.tls=true"
+    #       - "traefik.http.routers.posts-ssl.service=posts"
+
 networks:
   proxy:
