@@ -7,7 +7,7 @@ export default function PostList() {
   const [posts, setPosts] = useState({});
 
   const fetchPosts = async () => {
-    const res = await axios.get('http://localhost:4000/posts');
+    const res = await axios.get('http://localhost:4002/posts');
     setPosts(res.data);
     console.log('posts', res.data)
   };
@@ -24,7 +24,7 @@ export default function PostList() {
       >
       <div className="card-body">
         <h3>{post.title}</h3>
-        <CommentsList postId={post.id} />
+        <CommentsList comments={post.comments} />
         <CommentsCreate postId={post.id} />
       </div>
     </div>

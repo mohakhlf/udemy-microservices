@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const { randomBytes } = require('crypto');
 const cors = require('cors');
+const axios = require('axios');
 
 const logger = require('./config/winston');
 
@@ -47,12 +48,11 @@ app.use((err, req, res, next) => {
 });
 
 
-
 app.get('/posts', (req, res) => {
   res.send(posts)
 });
 
-app.post('/posts', (req, res) => {
+app.post('/posts', async (req, res) => {
   const id = randomBytes(4).toString('hex');
   const { title } = req.body
 
@@ -60,7 +60,20 @@ app.post('/posts', (req, res) => {
     id, title
   };
 
+  await axios.post('http://event-bus:4005/events', {
+    type: 'PostCreated',
+    data: {
+      id, title
+    }
+  }).catch((err) => console.log("Error : ", err.message));
+
   res.status(201).send(posts[id]);
+});
+
+app.post('/events', (req, res) => {
+  console.log('Event cecived', req.body.type);
+
+  res.send({})
 });
 
 app.get("/error", function(req, res) {
@@ -68,6 +81,6 @@ app.get("/error", function(req, res) {
 });
 
 app.listen(PORT, () => {
-  logger.info(`app posts listening on http://posts.localhost`);
+  logger.info(`app posts listening on http://localhost:${PORT}`);
   logger.debug("More detailed log");
 })

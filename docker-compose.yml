@@ -27,11 +27,13 @@ services:
     stdin_open: true
     tty: true
     depends_on:
-      - ports
+      - posts
       - comments
       # - reverse-proxy
     ports: 
       - 3000:3000
+    networks:
+      - proxy
     # labels:
     #       - traefik.frontend.rule=Host:client.localhost
     #       - "traefik.http.routers.client.rule=Host(`client.localhost`)"
@@ -42,7 +44,7 @@ services:
     #       - "traefik.http.routers.client-ssl.tls=true"
     #       - "traefik.http.routers.client-ssl.service=client"
 
-  ports:
+  posts:
     build: 
       context: posts
       dockerfile: Dockerfile
@@ -52,6 +54,8 @@ services:
       # - reverse-proxy
     ports: 
       - 4000:4000
+    networks:
+      - proxy
     # labels:
     #       - "traefik.http.routers.posts.rule=Host(`posts.localhost`)"
     #       - "traefik.http.routers.posts.entryPoints=web,traefik"
@@ -91,7 +95,30 @@ services:
     # depends_on:
       # - reverse-proxy
     ports: 
+      - 4005:4005
+    networks:
+      - proxy
+    # labels:
+    #       - "traefik.http.routers.posts.rule=Host(`posts.localhost`)"
+    #       - "traefik.http.routers.posts.entryPoints=web,traefik"
+    #       - "traefik.http.services.post.loadbalancer.server.port=4000"
+    #       - "traefik.http.routers.posts-ssl.rule=Host(`posts.localhost`)"
+    #       - "traefik.http.routers.posts-ssl.entryPoints=websecure"
+    #       - "traefik.http.routers.posts-ssl.tls=true"
+    #       - "traefik.http.routers.posts-ssl.service=posts"
+
+  query:
+    build: 
+      context: query
+      dockerfile: Dockerfile
+    volumes: 
+      - ./query/src:/query/src
+    # depends_on:
+      # - reverse-proxy
+    ports: 
       - 4002:4002
+    networks:
+      - proxy
     # labels:
     #       - "traefik.http.routers.posts.rule=Host(`posts.localhost`)"
     #       - "traefik.http.routers.posts.entryPoints=web,traefik"

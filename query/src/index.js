@@ -3,15 +3,15 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const { randomBytes } = require('crypto');
 const cors = require('cors');
-const axios = require('axios');
 
 const logger = require('./config/winston');
 
-const PORT = 4001;
+const PORT = 4002;
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
-const commentsByPostId = {};
+
+const posts = {};
 
 const morganFormat = process.env.NODE_ENV !== "production" ? "dev" : "combined";
 
@@ -45,45 +45,38 @@ app.use((err, req, res, next) => {
  res.json({ error: err.message });
 });
 
-
-
-app.get('/posts/:id/comments', (req, res) => {
- res.send(commentsByPostId[req.params.id] || []);
-});
-
-app.post('/posts/:id/comments', async (req, res) => {
- const commentsId = randomBytes(4).toString('hex');
- const {content} = req.body;
-
- const comments = commentsByPostId[req.params.id] || [];
-
- comments.push({id: commentsId, content});
-
- commentsByPostId[req.params.id] = comments;
-
- await axios.post('http://event-bus:4005/events', {
-   type: 'commentCreated',
-   data: {
-     id: commentsId,
-     content: content,
-     postId: req.params.id
-   }
- }).catch((err) => console.log("Error : ", err.message));
-
- res.status(201).send(comments);
-});
+app.get('/posts', (req, res) => {
+  res.send(posts);
+})
 
 app.post('/events', (req, res) => {
-  console.log('Event cecived', req.body.type);
+  const { type, data } = req.body;
+  console.log('Event cecived', req.body.type, req.body.data);
 
-  res.send({})
-});
+  if(type === 'PostCreated'){
+    const {id, title} = data;
+
+    posts[id] = { id, title, comments : [] };
+  }
+
+  if(type === 'commentCreated'){
+    const {id, content, postId} = data;
+
+    const post = posts[postId]
+
+    post.comments.push({id, content});
+  }
+
+  console.log('posts', posts)
+
+  res.send({});
+})
 
 app.get("/error", function(req, res) {
  throw new Error('Problem Here!');
 });
 
 app.listen(PORT, () => {
- logger.info("app comments listening on http://localhost:4001");
+ logger.info(`app query listening on http://localhost:${PORT}`);
  logger.debug("More detailed log");
 })
