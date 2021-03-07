@@ -1,0 +1,53 @@
+services:
+  reverse-proxy:
+    image: traefik
+    command:
+      - --api.insecure=true
+      - --providers.docker
+      - --entryPoints.web.address=:80
+      - --entryPoints.websecure.address=:443
+    ports:
+      - "80:80"
+      - "443:443"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - proxy
+
+  client:
+    build: 
+      context: client
+      dockerfile: Dockerfile
+    volumes: 
+      - ./client/src:/client/src
+    networks:
+      - proxy
+    labels:
+          - "traefik.http.routers.client.rule=Host(`client.localhost`)"
+          - "traefik.http.routers.client.entryPoints=web,traefik"
+          - "traefik.http.services.client.loadbalancer.server.port=3000"
+          - "traefik.http.routers.client-ssl.rule=Host(`client.localhost`)"
+          - "traefik.http.routers.client-ssl.entryPoints=websecure"
+          - "traefik.http.routers.client-ssl.tls=true"
+          - "traefik.http.routers.client-ssl.service=client"
+
+  ports:
+    build: 
+      context: posts
+      dockerfile: Dockerfile
+    volumes: 
+      - ./posts/src:/posts/src
+
+  comments:
+    build: 
+      context: comments
+      dockerfile: Dockerfile
+    volumes: 
+      - ./comments/src:/comments/src
+    networks:
+      - proxy
+    
+networks:
+  proxy:
