@@ -81,6 +81,25 @@ services:
     #       - "traefik.http.routers.comments-ssl.entryPoints=websecure"
     #       - "traefik.http.routers.comments-ssl.tls=true"
     #       - "traefik.http.routers.comments-ssl.service=comments"
+
+  event-bus:
+    build: 
+      context: event-bus
+      dockerfile: Dockerfile
+    volumes: 
+      - ./event-bus/src:/event-bus/src
+    # depends_on:
+      # - reverse-proxy
+    ports: 
+      - 4002:4002
+    # labels:
+    #       - "traefik.http.routers.posts.rule=Host(`posts.localhost`)"
+    #       - "traefik.http.routers.posts.entryPoints=web,traefik"
+    #       - "traefik.http.services.post.loadbalancer.server.port=4000"
+    #       - "traefik.http.routers.posts-ssl.rule=Host(`posts.localhost`)"
+    #       - "traefik.http.routers.posts-ssl.entryPoints=websecure"
+    #       - "traefik.http.routers.posts-ssl.tls=true"
+    #       - "traefik.http.routers.posts-ssl.service=posts"
     
 networks:
   proxy:
