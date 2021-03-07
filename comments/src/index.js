@@ -2,12 +2,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const { randomBytes } = require('crypto');
+const cors = require('cors');
 
 const logger = require('./config/winston');
 
 const PORT = 4001;
 const app = express();
 app.use(bodyParser.json());
+app.use(cors());
 const commentsByPostId = {};
 
 const morganFormat = process.env.NODE_ENV !== "production" ? "dev" : "combined";
@@ -66,6 +68,6 @@ app.get("/error", function(req, res) {
 });
 
 app.listen(PORT, () => {
- logger.info("app comments listening on http://localhost:" + PORT);
- logger.debug("More detailed log", {PORT});
+ logger.info("app comments listening on http://comments.localhost:");
+ logger.debug("More detailed log");
 })

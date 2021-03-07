@@ -1,20 +1,20 @@
 services:
-  reverse-proxy:
-    image: traefik
-    command:
-      - --api.insecure=true
-      - --providers.docker
-      - --entryPoints.web.address=:80
-      - --entryPoints.websecure.address=:443
-    ports:
-      - "80:80"
-      - "443:443"
-      # The Web UI (enabled by --api.insecure=true)
-      - "8080:8080"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - proxy
+  # reverse-proxy:
+  #   image: traefik
+  #   command:
+  #     - --api.insecure=true
+  #     - --providers.docker
+  #     - --entryPoints.web.address=:80
+  #     - --entryPoints.websecure.address=:443
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #     # The Web UI (enabled by --api.insecure=true)
+  #     - "8080:8080"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   networks:
+  #     - proxy
 
   client:
     build: 
@@ -24,14 +24,23 @@ services:
       - ./client/src:/client/src
     networks:
       - proxy
-    labels:
-          - "traefik.http.routers.client.rule=Host(`client.localhost`)"
-          - "traefik.http.routers.client.entryPoints=web,traefik"
-          - "traefik.http.services.client.loadbalancer.server.port=3000"
-          - "traefik.http.routers.client-ssl.rule=Host(`client.localhost`)"
-          - "traefik.http.routers.client-ssl.entryPoints=websecure"
-          - "traefik.http.routers.client-ssl.tls=true"
-          - "traefik.http.routers.client-ssl.service=client"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - ports
+      - comments
+      # - reverse-proxy
+    ports: 
+      - 3000:3000
+    # labels:
+    #       - traefik.frontend.rule=Host:client.localhost
+    #       - "traefik.http.routers.client.rule=Host(`client.localhost`)"
+    #       - "traefik.http.routers.client.entryPoints=web,traefik"
+    #       - "traefik.http.services.client.loadbalancer.server.port=3000"
+    #       - "traefik.http.routers.client-ssl.rule=Host(`client.localhost`)"
+    #       - "traefik.http.routers.client-ssl.entryPoints=websecure"
+    #       - "traefik.http.routers.client-ssl.tls=true"
+    #       - "traefik.http.routers.client-ssl.service=client"
 
   ports:
     build: 
@@ -39,6 +48,18 @@ services:
       dockerfile: Dockerfile
     volumes: 
       - ./posts/src:/posts/src
+    # depends_on:
+      # - reverse-proxy
+    ports: 
+      - 4000:4000
+    # labels:
+    #       - "traefik.http.routers.posts.rule=Host(`posts.localhost`)"
+    #       - "traefik.http.routers.posts.entryPoints=web,traefik"
+    #       - "traefik.http.services.post.loadbalancer.server.port=4000"
+    #       - "traefik.http.routers.posts-ssl.rule=Host(`posts.localhost`)"
+    #       - "traefik.http.routers.posts-ssl.entryPoints=websecure"
+    #       - "traefik.http.routers.posts-ssl.tls=true"
+    #       - "traefik.http.routers.posts-ssl.service=posts"
 
   comments:
     build: 
@@ -46,8 +67,20 @@ services:
       dockerfile: Dockerfile
     volumes: 
       - ./comments/src:/comments/src
+    # depends_on:
+      # - reverse-proxy
+    ports: 
+      - 4001:4001
     networks:
       - proxy
+    # labels:
+    #       - "traefik.http.routers.comments.rule=Host(`comments.localhost`)"
+    #       - "traefik.http.routers.comments.entryPoints=web,traefik"
+    #       - "traefik.http.services.comments.loadbalancer.server.port=4001"
+    #       - "traefik.http.routers.comments-ssl.rule=Host(`comments.localhost`)"
+    #       - "traefik.http.routers.comments-ssl.entryPoints=websecure"
+    #       - "traefik.http.routers.comments-ssl.tls=true"
+    #       - "traefik.http.routers.comments-ssl.service=comments"
     
 networks:
   proxy:
