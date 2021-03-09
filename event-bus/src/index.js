@@ -57,10 +57,10 @@ app.post('/events', (req, res) => {
 
   events.push(event);
 
-  axios.post('http://posts:4000/events', event).catch((err) => console.log("Error : ", err.message));
-  axios.post('http://comments:4001/events', event).catch((err) => console.log("Error : ", err.message));
-  axios.post('http://query:4002/events', event).catch((err) => console.log("Error : ", err.message));
-  axios.post('http://moderation:4003/events', event).catch((err) => console.log("Error : ", err.message));
+  axios.post('http://posts-clusterip-srv:4000/events', event).catch((err) => console.log("Error : ", err.message));
+  axios.post('http://comments-srv:4001/events', event).catch((err) => console.log("Error : ", err.message));
+  axios.post('http://query-srv:4002/events', event).catch((err) => console.log("Error : ", err.message));
+  axios.post('http://moderation-srv:4003/events', event).catch((err) => console.log("Error : ", err.message));
 
   res.send({ status: 'OK' });
 });

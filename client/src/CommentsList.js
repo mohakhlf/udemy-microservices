@@ -1,5 +1,4 @@
 export default function CommentsList({comments}) {
-  
   const renderedComments = comments.map(comment => {
     let content;
 
@@ -18,7 +17,5 @@ export default function CommentsList({comments}) {
     return <li key={comment.id}>{content}</li>;
   });
 
-  return <ul>
-    {renderedComments}
-  </ul>
+  return <ul>{renderedComments}</ul>;
 }

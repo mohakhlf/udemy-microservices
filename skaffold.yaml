@@ -1,0 +1,61 @@
+apiVersion: skaffold/v2beta11
+kind: Config
+metadata:
+  name: blog-microservice
+build:
+  local:
+    push: false
+  artifacts:
+  - image: mohakhlf/blog-micoservice-client
+    context: client
+    docker:
+      dockerfile: Dockerfile
+    sync:
+        manual:
+          - src: 'src/**/*.js'
+            dest: .
+  - image: mohakhlf/blog-micoservice-comments
+    context: comments
+    docker:
+      dockerfile: Dockerfile
+    sync:
+        manual:
+          - src: 'src/**/*.js'
+            dest: .
+  - image: mohakhlf/blog-micoservice-event-bus
+    context: event-bus
+    docker:
+      dockerfile: Dockerfile
+    sync:
+        manual:
+          - src: 'src/**/*.js'
+            dest: .
+  - image: mohakhlf/blog-micoservice-moderation
+    context: moderation
+    docker:
+      dockerfile: Dockerfile
+    sync:
+        manual:
+          - src: 'src/**/*.js'
+            dest: .
+  - image: mohakhlf/blog-micoservice-posts
+    context: posts
+    docker:
+      dockerfile: Dockerfile
+    sync:
+        manual:
+          - src: 'src/**/*.js'
+            dest: .
+  - image: mohakhlf/blog-micoservice-query 
+    context: query
+    docker:
+      dockerfile: Dockerfile
+    sync:
+        manual:
+          - src: 'src/**/*.js'
+            dest: .
+
+deploy:
+  kubectl:
+    manifests:
+    - infra/k8s/*
