@@ -51,8 +51,11 @@ app.get("/error", function(req, res) {
   throw new Error('Problem Here!');
 });
 
+const events = [];
 app.post('/events', (req, res) => {
   const event = req.body;
+
+  events.push(event);
 
   axios.post('http://posts:4000/events', event).catch((err) => console.log("Error : ", err.message));
   axios.post('http://comments:4001/events', event).catch((err) => console.log("Error : ", err.message));
@@ -61,6 +64,10 @@ app.post('/events', (req, res) => {
 
   res.send({ status: 'OK' });
 });
+
+app.get('/events', (req, res) => {
+  res.send(events);
+})
 
 app.listen(PORT, () => {
   logger.info(`app Event-bus listening on http://localhost:${PORT}/event`);

@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const { randomBytes } = require('crypto');
 const cors = require('cors');
+const axios = require('axios');
 
 const logger = require('./config/winston');
 
@@ -45,38 +46,60 @@ app.use((err, req, res, next) => {
  res.json({ error: err.message });
 });
 
+const handleEvent = (type, data) => {
+  if (type === 'PostCreated') {
+    const { id, title } = data;
+
+    posts[id] = { id, title, comments: [] };
+  }
+
+  if (type === 'CommentCreated') {
+    const { id, content, postId, status } = data;
+
+    const post = posts[postId];
+    post.comments.push({ id, content, status });
+  }
+
+  if (type === 'CommentUpdated') {
+    const { id, content, postId, status } = data;
+
+    const post = posts[postId];
+    const comment = post.comments.find(comment => {
+      return comment.id === id;
+    });
+
+    comment.status = status;
+    comment.content = content;
+  }
+};
+
 app.get('/posts', (req, res) => {
+  console.log('posts', posts);
   res.send(posts);
 })
-
 app.post('/events', (req, res) => {
   const { type, data } = req.body;
-  console.log('Event cecived', req.body.type, req.body.data);
 
-  if(type === 'PostCreated'){
-    const {id, title} = data;
+  handleEvent(type, data);
 
-    posts[id] = { id, title, comments : [] };
-  }
-
-  if(type === 'commentCreated'){
-    const {id, content, postId, status} = data;
-
-    const post = posts[postId]
-
-    post.comments.push({id, content, status});
-  }
-
-  console.log('posts', posts)
+  console.log(posts);
 
   res.send({});
-})
+});
 
 app.get("/error", function(req, res) {
  throw new Error('Problem Here!');
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
  logger.info(`app query listening on http://localhost:${PORT}`);
  logger.debug("More detailed log");
+
+ const res = await axios.get('http://event-bus:4005/events');
+
+ for (let event of res.data) {
+  console.log('Processing event:', event.type);
+
+  handleEvent(event.type, event.data);
+}
 })

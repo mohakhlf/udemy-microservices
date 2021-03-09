@@ -47,18 +47,20 @@ app.use((err, req, res, next) => {
 app.post('/events', async (req, res) => {
   const { type, data } = req.body;
 
-  if(type === 'commentCreated') {
+  if (type === 'CommentCreated') {
     const status = data.content.includes('orange') ? 'rejected' : 'approved';
 
     await axios.post('http://event-bus:4005/events', {
-      type: 'commentModerated',
+      type: 'CommentModerated',
       data: {
         id: data.id,
         postId: data.postId,
         status,
         content: data.content
       }
-    })
+    }).catch((err) => {
+      console.log(err.message);
+    });
   }
 
   res.send({});
